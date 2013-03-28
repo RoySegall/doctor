@@ -20,10 +20,8 @@ class doctorEntity extends EntityAPIController {
    * Overrides create().
    */
   public function create(array $values = array()) {
-    foreach ($values as $key => $value) {
-      $value = is_array($value) ? serialize($value) : $value;
-      $this->{$key} = $value;
-    }
+    $this->data = serialize($values['data']);
+    $this->created = $values['data'];
 
     return $this;
   }
@@ -36,7 +34,7 @@ class doctorEntity extends EntityAPIController {
       $entity = $this;
     }
 
-    $entity->data = is_array($entity->data) ? serialize($entity->data) : $entity->data;
+    $entity->data = serialize($entity->data);
 
     $primary_keys = $entity->id ? 'id' : array();
     drupal_write_record('doctor', $entity, $primary_keys);
@@ -49,7 +47,7 @@ class doctorEntity extends EntityAPIController {
     $entities = parent::load($ids, $condition);
 
     foreach ($entities as &$entity) {
-      $entity->data = is_array($entity->data) ? $entity->data : unserialize($entity->data);
+      $entity->data = unserialize($entity->data);
       $dummy = clone $this;
       // Run over the variagles and add it to the $dummy object.
       foreach (get_object_vars($entity) as $key => $value) {

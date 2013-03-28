@@ -51,3 +51,33 @@ function doctor_load($id) {
   $results = entity_load('doctor', array($id));
   return reset($results);
 }
+
+/**
+ * Load multiple doctor listen items.
+ *
+ * @param $ids
+ *  List of IDs to load.
+ *
+ * @return
+ *  List of doctor listen items.
+ */
+function doctor_load_multiple($ids) {
+  return entity_load('doctor', $ids);
+}
+
+/**
+ * Get all the listener items.
+ */
+function doctor_items() {
+  $query = new entityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'doctor')
+    ->propertyOrderBy('created')
+    ->execute();
+
+  if (empty($result['doctor'])) {
+    return;
+  }
+
+  return doctor_load_multiple(array_keys($result['doctor']));
+}

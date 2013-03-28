@@ -23,6 +23,12 @@ function drush_doctor_listen() {
 
   $second = 0;
   while($timeout > $second) {
+    if ($items = doctor_items()) {
+      foreach ($items as $item) {
+        drush_print(unserialize($item->data));
+        $item->delete();
+      }
+    }
     $second++;
     sleep(1);
   }
