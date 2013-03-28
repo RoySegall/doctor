@@ -1,0 +1,53 @@
+<?php
+/**
+ * @file
+ * Doctor module file.
+ */
+function doctor_entity_info() {
+  $return = array(
+    'doctor' => array(
+      'label' => t('Doctor'),
+      'controller class' => 'doctorEntity',
+      'base table' => 'doctor',
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Create a doctor listener item.
+ *
+ * @param $data
+ *  Data that will be store in the doctor listener in the DB entry.
+ * @param $time
+ *  The time the item created.
+ *
+ * @return
+ *  The entity object of the listener item.
+ */
+function doctor_create($data, $time = NULL) {
+  $values = array(
+    'data' => $data,
+    'created' => $time == NULL ? time() : $time,
+  );
+
+  return entity_create('doctor', $values);
+}
+
+/**
+ * Load a doctor item.
+ *
+ * @param $id
+ *  The doctor item.
+ *
+ * @return
+ *  The doctor item object.
+ */
+function doctor_load($id) {
+  $results = entity_load('doctor', array($id));
+  return reset($results);
+}

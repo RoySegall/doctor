@@ -1,0 +1,37 @@
+<?php
+/**
+ * @file
+ * Install file for the doctor module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function doctor_schema() {
+  $schema['doctor'] = array(
+    'fields' => array(
+      'id' => array(
+        'description' => 'The entry ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp when the entry was created.',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'The arbitrary data for the item.',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,6 @@
+name = Doctor
+description = Doctor drush module
+core = 7.x
+version = 7.x-1.x
+
+files[] = includes/doctor.entity.inc
