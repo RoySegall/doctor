@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Doctor drush drush integration file.
+ * Doctor drush integration file.
  */
 
 /**
