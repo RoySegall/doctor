@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * File with the doctor entity class.
+ * Doctor entity class handler.
  */
 class doctorEntity extends EntityAPIController {
 

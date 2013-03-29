@@ -1,0 +1,5 @@
+name = Doctor example
+description = Integration example for the "Doctor" module.
+core = 7.x
+version = 7.x-1.x
+package = Doctor

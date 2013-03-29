@@ -3,6 +3,13 @@
  * @file
  * Doctor module file.
  */
+
+// The cache name for the doctor listeners handlers.
+define('DOCTOR_LISTENER_CACHE', 'doctor_listener_info');
+
+/**
+ * Implements hook_entity_info().
+ */
 function doctor_entity_info() {
   $return = array(
     'doctor' => array(
@@ -80,4 +87,24 @@ function doctor_items() {
   }
 
   return doctor_load_multiple(array_keys($result['doctor']));
+}
+
+/**
+ * Gather the handlers for the listeners.
+ */
+function doctor_listener_handler() {
+  if ($cache = cache_get(DOCTOR_LISTENER_CACHE)) {
+    $doctor_listener_handler = $cache->data;
+  }
+  else {
+    // Collect all the doctor listeners handlers.
+    $doctor_listener_handler = module_invoke_all('doctor_listener_info');
+
+    // Let other modules to alter the module.
+    drupal_alter('doctor_listener_info', $info);
+
+    cache_set(DOCTOR_LISTENER_CACHE, $doctor_listener_handler, 'cache');
+  }
+
+  return $doctor_listener_handler;
 }
