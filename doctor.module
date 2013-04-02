@@ -8,6 +8,48 @@
 define('DOCTOR_LISTENER_CACHE', 'doctor_listener_info');
 
 /**
+ * Implements hook_menu_item().
+ */
+function doctor_menu() {
+  $items['admin/config/development/doctor'] = array(
+    'title' => 'Doctor settings',
+    'page callback' => array('drupal_get_form'),
+    'page arguments' => array('doctor_settings'),
+    'access arguments' => array('doctor manage settings'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission(),
+ */
+function doctor_permission() {
+  return array(
+    'doctor manage settings' => array(
+      'title' => t('Manage Doctor settings'),
+      'description' => t('Allow for a user to change the settings of the module Doctor.'),
+    ),
+  );
+}
+
+/**
+ * Mange the settings of the Doctor module's
+ */
+function doctor_settings($form, $form_sate) {
+  $description = 'Some items can be created when the doctor is not listening. Delete them before the docotor will listen again.';
+  $description .= '<br />Default behavior will display all the items when the docotor is starting to listen.';
+  $form['purge_muted_items'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Delete items when the doctor didn't listen"),
+    '#description' => t($description),
+    '#default_value' => variable_get('purge_muted_items'),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
  * Implements hook_entity_info().
  */
 function doctor_entity_info() {
@@ -107,4 +149,19 @@ function doctor_listener_handler() {
   }
 
   return $doctor_listener_handler;
+}
+
+/**
+ * Purge all the items.
+ */
+function doctor_purge_muted_items() {
+  $items = doctor_items();
+
+  if (!$items) {
+    return;
+  }
+
+  foreach ($items as $item) {
+    $item->delete();
+  }
 }

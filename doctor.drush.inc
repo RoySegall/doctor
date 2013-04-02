@@ -12,11 +12,13 @@ function doctor_drush_command() {
   $items['doctor-listen'] = array(
     'description' => 'Activate the doctor listen functionality.',
     'options' => array(
-      'timeout' => 'The amount of time in seconds that the doctor should listen to the actions in the site.',
+      'timeout' => 'The amount of time in seconds that the doctor should listen to the actions in the site. 0 value will allow to the doctor listen forever(or until the server fall down/you\'ll terminate him).',
     ),
     'examples' => array(
       'drush doctor-listen --timeout=120',
+      'drush doctor-listen --timeout=0',
     ),
+    'aliases' => array('dols'),
   );
   return $items;
 }
@@ -27,8 +29,14 @@ function doctor_drush_command() {
 function drush_doctor_listen() {
   $timeout = drush_get_option('timeout', 120);
 
+  // Delete muted items if needed.
+  if (variable_get('purge_muted_items')) {
+    doctor_purge_muted_items();
+  }
+
   $second = 0;
-  while($timeout > $second) {
+  $continue = TRUE;
+  do {
     // Get all the doctor listener items.
     if ($items = doctor_items()) {
       foreach ($items as $item) {
@@ -45,7 +53,16 @@ function drush_doctor_listen() {
         $item->delete();
       }
     }
-    $second++;
+
+    if ($timeout > 0) {
+      if ($timeout > $second) {
+        $second++;
+      }
+      else {
+        $continue = FALSE;
+      }
+    }
     sleep(1);
-  }
+
+  } while($continue);
 }
