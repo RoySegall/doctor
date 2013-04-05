@@ -37,3 +37,16 @@ function hook_doctor_listener_info_alter(&$data) {
     }
   }
 }
+
+/**
+ * Implements hook_doctor_bundle_info().
+ */
+function hook_doctor_bundle_info() {
+  return array(
+    'foo' => array(
+      'name' => 'Foo',
+      'type' => 'foo',
+      'description' => 'Bar!! You expected foo but no... surprise ;)',
+    ),
+  );
+}

@@ -5,9 +5,11 @@
  */
 
 /**
- * Implements hook_schema().
+ * Get the schema of the Doctor module.
  */
-function doctor_schema() {
+function _doctor_schema() {
+  $schema = array();
+
   $schema['doctor'] = array(
     'fields' => array(
       'id' => array(
@@ -15,6 +17,13 @@ function doctor_schema() {
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => 'The type of the doctor entity.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'doctor',
       ),
       'created' => array(
         'type' => 'int',
@@ -33,5 +42,59 @@ function doctor_schema() {
     'primary key' => array('id'),
   );
 
+  $schema['doctor_type'] = array(
+    'description' => 'Stores information about all defined {node} types.',
+    'fields' => array(
+      'type' => array(
+        'description' => 'The machine-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The human-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'translatable' => TRUE,
+      ),
+      'description' => array(
+        'description' => 'A brief description of this type.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'medium',
+        'translatable' => TRUE,
+      ),
+    ),
+    'primary key' => array('type'),
+  );
+
   return $schema;
+}
+
+/**
+ * Implements hook_schema().
+ */
+function doctor_schema() {
+  $schema = _doctor_schema();
+
+  return $schema;
+}
+
+
+/**
+ * Adding a bundle support to the Doctor entity.
+ */
+function doctor_update_7002() {
+  db_add_field('doctor', 'type', array(
+    'description' => 'The type of the doctor entity.',
+    'type' => 'varchar',
+    'length' => 32,
+    'not null' => TRUE,
+    'default' => 'doctor',
+  ));
+
+  $schema = _doctor_schema();
+  db_create_table('doctor_type', $schema['doctor_type']);
 }

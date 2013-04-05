@@ -18,7 +18,176 @@ function doctor_menu() {
     'access arguments' => array('doctor manage settings'),
   );
 
+  $items['admin/structure/doctor'] = array(
+    'title' => 'Doctor ',
+    'access arguments' => array('doctor manage bundles'),
+  );
+
+  $items['admin/structure/doctor'] = array(
+    'title' => 'Doctor manage bundles',
+    'description' => 'Manage the bundles for the module Doctor.',
+    'page callback' => 'doctor_bundles_manage',
+    'access arguments' => array('doctor manage bundles'),
+  );
+
+  $items['admin/structure/doctor/add'] = array(
+    'title' => 'Add a new bundle',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('doctor_bundle_form'),
+    'access arguments' => array('doctor manage bundles'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  foreach (doctor_get_types() as $bundle) {
+    $items['admin/structure/doctor/manage/' . $bundle->type] = array(
+      'title' => $bundle->name,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('doctor_bundle_form', 4),
+      'access arguments' => array('doctor manage bundles'),
+    );
+
+    $items['admin/structure/doctor/manage/' . $bundle->type .'/edit'] = array(
+      'title' => 'Edit',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('doctor_bundle_form', 4),
+      'access arguments' => array('doctor manage bundles'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0,
+    );
+
+    $items['admin/structure/doctor/manage/' . $bundle->type .'/delete'] = array(
+      'title' => 'Delete',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('doctor_bundle_delete', 4),
+      'access arguments' => array('doctor manage bundles'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 1,
+    );
+  }
+
   return $items;
+}
+
+/**
+ * Get all the doctor entity bundles available.
+ *
+ * @param $name
+ *  The name of the bundle type. Optional.
+ *
+ * @return mixed
+ *  The existed doctor entities type.
+ */
+function doctor_get_types($name = NULL) {
+  $results = db_select('doctor_type')
+    ->fields('doctor_type')
+    ->execute()
+    ->fetchAllAssoc('type');
+
+  if (!empty($name)) {
+    return isset($results[$name]) ? $results[$name] : array();
+  }
+
+  return $results;
+}
+
+/**
+ * Create a new doctor bundle.
+ *
+ * @param $human_name
+ *  The human readable name of the bundle.
+ * @param $machine_name
+ *  The machine name of the bundle.
+ * @param $description
+ *  The description of the bundle.
+ */
+function doctor_create_type($human_name, $machine_name, $description) {
+  if (doctor_get_types($machine_name)) {
+    throw new Exception(t('A doctor bundle with the name @name already exists.', array('@name' => $machine_name,)));
+  }
+  db_insert('doctor_type')
+    ->fields(
+      array(
+        'type' => $machine_name,
+        'name' => $human_name,
+        'description' => $description,
+      )
+    )
+    ->execute();
+}
+
+/**
+ * Update a existed doctor bundle.
+ *
+ * @param $human_name
+ *  The human readable name of the bundle.
+ * @param $machine_name
+ *  The machine name of the bundle.
+ * @param $description
+ *  The descriptions of the bundle.
+ */
+function doctor_update_type($human_name, $machine_name, $description) {
+  db_update('doctor_type')
+    ->fields(
+      array(
+        'name' => $human_name,
+        'description' => $description,
+      )
+    )
+    ->condition('type', $machine_name)
+    ->execute();
+}
+
+/**
+ * Delete a doctor bundle.
+ *
+ * @param $type
+ *  The doctor bundle to be deleted.
+ */
+function doctor_delete_type($type) {
+  db_delete('doctor_type')
+  ->condition('type', $type)
+  ->execute();
+}
+
+/**
+ * Implements hook_flush_caches().
+ *
+ * When flushing the cache, we need to add defined bundles via hooks.
+ */
+function doctor_flush_caches() {
+  $information = module_invoke_all('doctor_bundle_info');
+
+  foreach ($information as $bundle) {
+    if (doctor_get_types($bundle['type'])) {
+      continue;
+    }
+
+    doctor_create_type($bundle['name'], $bundle['type'], $bundle['description']);
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function doctor_theme() {
+  return array(
+    'doctor_admin_overview' => array(
+      'variables' => array('bundle' => NULL),
+    ),
+  );
+}
+
+/**
+ * Theme callback: build the row of the name, machine name and description.
+ */
+function theme_doctor_admin_overview($variables) {
+  $bundle = $variables['bundle'];
+
+  $output = check_plain($bundle->name);
+  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $bundle->type)) . '</small>';
+  $output .= '<div class="description">' . filter_xss_admin($bundle->description) . '</div>';
+
+  return $output;
 }
 
 /**
@@ -29,6 +198,10 @@ function doctor_permission() {
     'doctor manage settings' => array(
       'title' => t('Manage Doctor settings'),
       'description' => t('Allow for a user to change the settings of the module Doctor.'),
+    ),
+    'doctor manage bundles' => array(
+      'title' => t('Manage doctor bundles'),
+      'description' => t('Allow the user to manage the Doctor bundles.'),
     ),
   );
 }
@@ -58,11 +231,26 @@ function doctor_entity_info() {
       'label' => t('Doctor'),
       'controller class' => 'doctorEntity',
       'base table' => 'doctor',
+      'fieldable' => TRUE,
       'entity keys' => array(
         'id' => 'id',
       ),
+      'bundle keys' => array(
+        'bundle' => 'type',
+      ),
     ),
   );
+
+  foreach (doctor_get_types() as $bundle) {
+    $return['doctor']['bundles'][$bundle->type] = array(
+      'label' => $bundle->name,
+      'admin' => array(
+        'path' => 'admin/structure/doctor/manage/' . $bundle->type,
+        'real path' => 'admin/structure/doctor/manage/' . str_replace('_', '-', $bundle->type),
+        'access arguments' => array('doctor manage bundles'),
+      ),
+    );
+  }
 
   return $return;
 }
@@ -152,7 +340,7 @@ function doctor_listener_handler() {
 }
 
 /**
- * Purge all the items.
+ * Purge all the muted items.
  */
 function doctor_purge_muted_items() {
   $items = doctor_items();
@@ -163,5 +351,150 @@ function doctor_purge_muted_items() {
 
   foreach ($items as $item) {
     $item->delete();
+  }
+}
+
+/**
+ * Manage the bundles.
+ */
+function doctor_bundles_manage() {
+  $headers = array(
+    t('Name'),
+    array('data' => t('Options'), 'colspan' => 3),
+  );
+
+  $data = array();
+
+  foreach (doctor_get_types() as $bundle) {
+    $data[] = array(
+      array('data' => theme('doctor_admin_overview', array('bundle' => $bundle)), 'width' => '70%'),
+      array('data' => l(t('Edit'), 'admin/structure/doctor/manage/' . $bundle->type . '/edit'), 'width' => '10%'),
+      array('data' => l(t('Delete'), 'admin/structure/doctor/manage/' . $bundle->type . '/delete'), 'width' => '10%'),
+      array('data' => l(t('Manage fields'), 'admin/structure/doctor/manage/' . $bundle->type . '/fields'), 'width' => '10%'),
+    );
+  }
+
+  $output = theme('table', array('header' => $headers, 'rows' => $data));
+
+  return $output;
+}
+
+/**
+ * Form for adding a new bundle.
+ */
+function doctor_bundle_form($form, &$form_state, $type = NULL) {
+  if ($type) {
+    $info = doctor_get_types($type);
+    $name = $info->name;
+    $machine = $info->type;
+    $description = $info->description;
+    $form_state['op'] = 'edit';
+  }
+  else {
+    $name = '';
+    $machine = '';
+    $description = '';
+    $form_state['op'] = 'create';
+  }
+  $form['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield',
+    '#default_value' => $name,
+    '#description' => t('The human readable name of the entity type.'),
+    '#required' => TRUE,
+    '#size' => 30,
+  );
+
+  $form['type'] = array(
+    '#type' => 'machine_name',
+    '#default_value' => $machine,
+    '#maxlength' => 32,
+    '#machine_name' => array(
+      'exists' => 'doctor_get_types',
+    ),
+    '#description' => t('A machine readable name of the entity type.'),
+  );
+
+  $form['description'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Description'),
+    '#description' => t('A short description about the new entity type.'),
+    '#required' => TRUE,
+    '#default_value' => $description,
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save'),
+    ),
+    'cancel' => array(
+      '#markup' => l(t('Cancel'), 'admin/structure/doctor'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Adding a new Doctor entity bundle.
+ */
+function doctor_bundle_form_submit($form, &$form_state) {
+  if ($form_state['op'] == 'edit') {
+    $function_name = 'doctor_update_type';
+    $message = t('The doctor bundle @name has updated successfully.', array(
+      '@name' => $form_state['values']['name'],
+    ));
+  }
+  else {
+    $function_name = 'doctor_create_type';
+    $message = t('The doctor bundle @name has created successfully.', array(
+      '@name' => $form_state['values']['name'],
+    ));
+  }
+  $function_name($form_state['values']['name'], $form_state['values']['type'], $form_state['values']['description']);
+  $form_state['redirect'] = 'admin/structure/doctor';
+  drupal_set_message($message);
+  drupal_flush_all_caches();
+}
+
+/**
+ * Deleting the bundle.
+ */
+function doctor_bundle_delete($form, &$form_state, $type) {
+  // When the bundle is exported - display a message to the user.
+  $information = module_invoke_all('doctor_bundle_info');
+
+  foreach ($information as $exported_bundles) {
+    if ($exported_bundles['type'] == $type) {
+      drupal_set_message(t("This bundle is already exported via code. Deleting this bundle won't be affected."), 'error');
+    }
+  }
+
+  $bundle = doctor_get_types($type);
+  $form_state['bundle'] = $bundle;
+
+  // Always provide entity id in the same form key as in the entity edit form.
+  return confirm_form($form,
+    t('Are you sure you want to delete the bundle %title?',
+      array('%title' => $bundle->name)),
+    'admin/structure/doctor',
+    t('Are you sure you want to delete the bundle? This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel'));
+}
+
+/**
+ * Deleting the bundle submit handler.
+ */
+function doctor_bundle_delete_submit($form, &$form_state) {
+  if ($form_state['clicked_button']['#type']) {
+    doctor_delete_type($form_state['bundle']->type);
+
+    $form_state['redirect'] = 'admin/structure/doctor';
+    drupal_set_message(t('The bundle @name deleted successfully', array(
+      '@name' => $form_state['bundle']->name,
+    )));
   }
 }
