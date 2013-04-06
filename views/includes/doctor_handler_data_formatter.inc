@@ -18,7 +18,7 @@ class doctor_handler_data_formatter extends views_handler_field {
       else {
         if (!$shown) {
           // Notify the user that the callback function is not exists.
-          drupal_set_message(t('The function @name was not found, render with print_r', array('@name' => $this->options['formatter_data'])), 'error');
+          drupal_set_message(t('The function @name was not found, rendering with print_r.', array('@name' => $this->options['formatter_data'])), 'error');
           $shown = TRUE;
         }
       }
