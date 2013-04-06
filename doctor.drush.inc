@@ -43,11 +43,11 @@ function drush_doctor_listen() {
 
         // Other modules arne't implementing any handler, use drush_print_r().
         if (!$listeners = doctor_listener_handler()) {
-          drush_print(unserialize($item->data));
+          drush_print_r($item->data);
         }
         else {
           foreach ($listeners as $listener) {
-            call_user_func($listener['callback'], unserialize($item->data));
+            call_user_func($listener['callback'], $item->data);
           }
         }
         $item->delete();

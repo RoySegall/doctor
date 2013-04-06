@@ -13,7 +13,7 @@ class doctorEntity extends EntityAPIController {
 
     $this->id = 0;
     $this->data = '';
-    $this->created = 0;
+    $this->created = time();
   }
 
   /**
@@ -21,7 +21,7 @@ class doctorEntity extends EntityAPIController {
    */
   public function create(array $values = array()) {
     $this->data = serialize($values['data']);
-    $this->created = $values['data'];
+    $this->created = $values['created'];
 
     return $this;
   }
@@ -30,11 +30,11 @@ class doctorEntity extends EntityAPIController {
    * Saving the listen item.
    */
   public function save($entity = NULL) {
-    if (!is_object($entity)) {
-      $entity = $this;
-    }
+    $entity = $this;
 
-    $entity->data = serialize($entity->data);
+    if (!is_string($entity->data)) {
+      $entity->data = serialize($entity->data);
+    }
 
     $primary_keys = $entity->id ? 'id' : array();
     drupal_write_record('doctor', $entity, $primary_keys);
@@ -47,7 +47,7 @@ class doctorEntity extends EntityAPIController {
     $entities = parent::load($ids, $condition);
 
     foreach ($entities as &$entity) {
-      $entity->data = unserialize($entity->data);
+      $entity->data = @unserialize($entity->data);
       $dummy = clone $this;
       // Run over the variagles and add it to the $dummy object.
       foreach (get_object_vars($entity) as $key => $value) {

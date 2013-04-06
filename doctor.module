@@ -138,6 +138,16 @@ function doctor_update_type($human_name, $machine_name, $description) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function doctor_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'doctor') . '/views',
+  );
+}
+
+/**
  * Delete a doctor bundle.
  *
  * @param $type
@@ -613,6 +623,9 @@ function doctor_features_revert($module = NULL) {
 
 /**
  * Implements hook_features_disable().
+ *
+ * @param $modules
+ *  List of modules.
  */
 function doctor_modules_enabled($modules) {
   doctor_module_enabled_disabled($modules);
@@ -620,6 +633,9 @@ function doctor_modules_enabled($modules) {
 
 /**
  * Implements hook_features_enable().
+ *
+ * @param $modules
+ *  List of modules.
  */
 function doctor_modules_disabled($modules) {
   doctor_module_enabled_disabled($modules);

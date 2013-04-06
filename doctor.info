@@ -4,4 +4,7 @@ core = 7.x
 version = 7.x-1.x
 package = Doctor
 
+; Includes files.
 files[] = includes/doctor.entity.inc
+files[] = views/includes/doctor_handler_data_formatter.inc
+files[] = views/includes/doctor_handler_bundle_formatter.inc
