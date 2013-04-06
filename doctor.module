@@ -266,6 +266,41 @@ function doctor_entity_info() {
 }
 
 /**
+ * Implements hook_entity_property_info().
+ */
+function doctor_entity_property_info() {
+  $info = array();
+  $properties = &$info['doctor']['properties'];
+
+  $properties['data'] = array(
+    'label' => t("Data"),
+    'type' => 'unknown',
+    'description' => t("The data of the listen item."),
+    'setter callback' => 'doctor_entity_metadata_wrapper_data_setter_callback',
+    'validation callback' => 'doctor_entity_metadata_wrapper_data_validation_callback',
+    'schema field' => 'data',
+  );
+
+  return $info;
+}
+
+/**
+ * Setter callback for the doctor data listen item.
+ */
+function doctor_entity_metadata_wrapper_data_setter_callback(&$data, $name, $value, $langcode, $type, $info) {
+  $data->$name = $value;
+}
+
+/**
+ * Validate function for the doctor data listen item. Each value that will be
+ * set is fine due to the fact that before the saving to the DB the value
+ * is getting serialized.
+ */
+function doctor_entity_metadata_wrapper_data_validation_callback() {
+  return TRUE;
+}
+
+/**
  * Create a doctor listener item.
  *
  * @param $data
