@@ -86,7 +86,7 @@ function doctor_schema() {
 /**
  * Adding a bundle support to the Doctor entity.
  */
-function doctor_update_7002() {
+function doctor_update_7000() {
   db_add_field('doctor', 'type', array(
     'description' => 'The type of the doctor entity.',
     'type' => 'varchar',
