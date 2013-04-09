@@ -39,6 +39,13 @@ class doctorEntity extends EntityAPIController {
     $primary_keys = $entity->id ? 'id' : array();
     drupal_write_record('doctor', $entity, $primary_keys);
 
+    if (empty($primary_keys)) {
+      field_attach_insert('doctor', $entity);
+    }
+    else {
+      field_attach_update('doctor', $entity);
+    }
+
     // Change the value back to un-serialize when accessing via the static cache.
     $entity->data = unserialize($entity->data);
   }
