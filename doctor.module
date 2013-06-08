@@ -99,6 +99,8 @@ function doctor_get_types($name = NULL) {
  *  The machine name of the bundle.
  * @param $description
  *  The description of the bundle.
+ *
+ * @throws Exception
  */
 function doctor_create_type($human_name, $machine_name, $description) {
   if (doctor_get_types($machine_name)) {
@@ -239,7 +241,8 @@ function doctor_entity_info() {
   $return = array(
     'doctor' => array(
       'label' => t('Doctor'),
-      'controller class' => 'doctorEntity',
+      'entity class' => 'doctorEntity',
+      'controller class' => 'EntityAPIController',
       'base table' => 'doctor',
       'fieldable' => TRUE,
       'entity keys' => array(
@@ -308,7 +311,7 @@ function doctor_entity_metadata_wrapper_data_validation_callback() {
  * @param $time
  *  The time the item created.
  *
- * @return
+ * @return bool
  *  The entity object of the listener item.
  */
 function doctor_create($data, $time = NULL) {
@@ -326,7 +329,7 @@ function doctor_create($data, $time = NULL) {
  * @param $id
  *  The doctor item.
  *
- * @return
+ * @return doctorEntity
  *  The doctor item object.
  */
 function doctor_load($id) {
@@ -340,7 +343,7 @@ function doctor_load($id) {
  * @param $ids
  *  List of IDs to load.
  *
- * @return
+ * @return doctorEntity
  *  List of doctor listen items.
  */
 function doctor_load_multiple($ids) {
@@ -349,6 +352,9 @@ function doctor_load_multiple($ids) {
 
 /**
  * Get all the listener items.
+ *
+ * @return doctorEntity
+ *  List of doctor listen items.
  */
 function doctor_items() {
   $query = new entityFieldQuery();

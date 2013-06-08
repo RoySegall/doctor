@@ -23,18 +23,18 @@ function doctor_example_doctor_listener_info() {
  *  The un-serialized data listener item.
  */
 function doctor_example_doctor_listener_callback($data) {
-  if (is_array($data)) {
-    $account = user_load($data['uid']);
+  $wrapper = $data['wrapper'];
+
+  if ($wrapper->type() == 'node') {
     $params = array(
-      '@title' => $data['title'],
-      '@user' => $account->name,
+      '@title' => $wrapper->label(),
+      '@user' => $wrapper->author->label(),
     );
     drush_print(dt('The user @user posted a node with the title: @title', $params));
   }
   else {
-    $account = user_load($data);
     $params = array(
-      '@user' => $account->name,
+      '@user' => $wrapper->author->label(),
     );
     drush_print(dt('The user @user posted a comment', $params));
   }
@@ -46,8 +46,7 @@ function doctor_example_doctor_listener_callback($data) {
 function doctor_example_node_insert($node) {
   $doctor = doctor_create(
     array(
-      'title' => $node->title,
-      'uid' => $node->uid,
+      'wrapper' => entity_metadata_wrapper('node', $node),
     )
   );
   $doctor->save();
@@ -57,6 +56,10 @@ function doctor_example_node_insert($node) {
  * Implements hook_comment_insert()
  */
 function doctor_example_comment_insert($comment) {
-  $doctor = doctor_create($comment->uid);
+  $doctor = doctor_create(
+    array(
+      'wrapper' => entity_metadata_wrapper('comment', $comment),
+    )
+  );
   $doctor->save();
 }
