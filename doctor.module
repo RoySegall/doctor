@@ -179,6 +179,19 @@ function doctor_flush_caches() {
 }
 
 /**
+ * Implements hook_doctor_bundle_info().
+ */
+function doctor_doctor_bundle_info() {
+  return array(
+    'doctor' => array(
+      'name' => 'Doctor',
+      'type' => 'doctor',
+      'description' => 'Main doctor bundle.',
+    ),
+  );
+}
+
+/**
  * Implements hook_theme().
  */
 function doctor_theme() {
