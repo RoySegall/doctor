@@ -361,6 +361,7 @@ function doctor_items() {
   $result = $query
     ->entityCondition('entity_type', 'doctor')
     ->propertyOrderBy('created')
+    ->propertyCondition('watched', 0)
     ->execute();
 
   if (empty($result['doctor'])) {

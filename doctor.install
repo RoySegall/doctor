@@ -38,6 +38,12 @@ function _doctor_schema() {
         'serialize' => TRUE,
         'description' => 'The arbitrary data for the item.',
       ),
+      'watched' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Determine if the item has been watched in the CLI.',
+      ),
     ),
     'primary key' => array('id'),
   );
@@ -82,7 +88,6 @@ function doctor_schema() {
   return $schema;
 }
 
-
 /**
  * Adding a bundle support to the Doctor entity.
  */
@@ -97,4 +102,16 @@ function doctor_update_7000() {
 
   $schema = _doctor_schema();
   db_create_table('doctor_type', $schema['doctor_type']);
+}
+
+/**
+ * Adding a status property to the doctor schema.
+ */
+function doctor_update_7002() {
+  db_add_field('doctor', 'watched', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'Determine if the item has been watched in the CLI.',
+  ));
 }

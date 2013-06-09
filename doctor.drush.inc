@@ -50,7 +50,7 @@ function drush_doctor_listen() {
             call_user_func($listener['callback'], $item->data);
           }
         }
-        $item->delete();
+        $item->watched();
       }
     }
 

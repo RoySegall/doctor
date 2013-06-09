@@ -44,22 +44,20 @@ function doctor_example_doctor_listener_callback($data) {
  * Implements hook_node_insert().
  */
 function doctor_example_node_insert($node) {
-  $doctor = doctor_create(
+  doctor_create(
     array(
       'wrapper' => entity_metadata_wrapper('node', $node),
     )
-  );
-  $doctor->save();
+  )->save();
 }
 
 /**
  * Implements hook_comment_insert()
  */
 function doctor_example_comment_insert($comment) {
-  $doctor = doctor_create(
+  doctor_create(
     array(
       'wrapper' => entity_metadata_wrapper('comment', $comment),
     )
-  );
-  $doctor->save();
+  )->save();
 }
