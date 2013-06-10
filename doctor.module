@@ -65,7 +65,31 @@ function doctor_menu() {
     );
   }
 
+  $items['admin/reports/doctor']  = array(
+    'title' => 'Doctor',
+    'description' => 'Watch all of the doctor items.',
+    'access arguments' => array('doctor display items'),
+    'page callback' => 'doctor_view_items',
+  );
+
+  $items['doctor/%doctor/delete']  = array(
+    'title' => 'Delete',
+    'description' => 'Delete an item.',
+    'access arguments' => array('doctor delete items'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('doctor_delete_item', 1),
+  );
+
   return $items;
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function doctor_admin_paths() {
+  return array(
+    'doctor/*' => TRUE,
+  );
 }
 
 /**
@@ -227,6 +251,14 @@ function doctor_permission() {
     'doctor manage bundles' => array(
       'title' => t('Manage doctor bundles'),
       'description' => t('Allow the user to manage the Doctor bundles.'),
+    ),
+    'doctor display items' => array(
+      'title' => t('View doctor items'),
+      'description' => t('Grant the user permission to view the doctor items via the UI.'),
+    ),
+    'doctor delete items' => array(
+      'title' => t('Delete doctor items'),
+      'description' => t('Grant the user permission to delete the doctor items via the UI.'),
     ),
   );
 }
@@ -697,7 +729,7 @@ function doctor_modules_disabled($modules) {
 }
 
 /**
- * Flushing the cache if the given list of modules invoke the doctor budnle info
+ * Flushing the cache if the given list of modules invoke the doctor bundle info
  * hook.
  *
  * @param $modules
@@ -709,5 +741,103 @@ function doctor_module_enabled_disabled($modules) {
       continue;
     }
     drupal_flush_all_caches();
+  }
+}
+
+/**
+ * Display a list of doctor items.
+ */
+function doctor_view_items() {
+  $per_page = 25;
+  $page = !isset($_GET['page']) ? 0 : $_GET['page'];
+
+  // Build the query.
+  $query = new entityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'doctor')
+    ->range($page * $per_page, $per_page)
+    ->propertyOrderBy('created', 'ASC');
+
+  // Adding the type of the doctor items.
+  if (isset($_GET['type'])) {
+    $query->propertyCondition('type', $_GET['type']);
+  }
+
+  $result = $query
+    ->execute();
+
+  // Gather all the doctor items.
+  $content = array();
+  if (empty($result['doctor'])) {
+    $content[] = array(
+      array('data' => t('No data were found.'), 'colspan' => 5)
+    );
+  }
+  else {
+    // Get the total amount of doctor items.
+    $query = new entityFieldQuery();
+    $total = $query
+      ->entityCondition('entity_type', 'doctor')
+      ->count()
+      ->execute();
+
+    pager_default_initialize($total, $per_page);
+
+    // Loop over the doctor items.
+    $doctors = doctor_load_multiple(array_keys($result['doctor']));
+    foreach ($doctors as $doctor) {
+
+      $content[] = array(
+        print_r($doctor->data, TRUE),
+        date('Y-m-d H:i', $doctor->created),
+        l(t('Delete'), 'doctor/' . $doctor->id . '/delete'),
+      );
+    }
+  }
+
+  $output = '';
+
+  // Displaying the table.
+  $output .= theme('table', array(
+    'header' => array(
+      array('data' => t('Doctor items'), 'width' => '80%'),
+      array('data' => t('Published on'), 'width' => '10%'),
+      array('data' => t('Options'), 'width' => '10%'),
+    ),
+    'rows' => $content,
+  ));
+
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Delete an item.
+ */
+function doctor_delete_item($form, &$form_state, $doctor) {
+  $form_state['#entity'] = $doctor;
+
+  // Always provide entity id in the same form key as in the entity edit form.
+  return confirm_form($form,
+    t('Are you sure to delete the doctor item %id',
+      array('%id' => $doctor->id)),
+    'admin/reports/doctor',
+    t('Are you sure you want to delete the doctor item? This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel'));
+}
+
+/**
+ * Deleting the sub theme submit handler.
+ */
+function doctor_delete_item_submit($form, &$form_state) {
+  if ($form_state['clicked_button']['#type']) {
+    $form_state['#entity']->delete();
+
+    $form_state['redirect'] = 'admin/reports/doctor';
+    drupal_set_message(t('The doctor item %id has deleted successfully', array(
+      '%id' => $form_state['#entity']->id,
+    )));
   }
 }
