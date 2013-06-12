@@ -10,3 +10,4 @@ dependencies[] = entity
 files[] = includes/doctor.entity.inc
 files[] = views/includes/doctor_handler_data_formatter.inc
 files[] = views/includes/doctor_handler_bundle_formatter.inc
+files[] = doctor.test

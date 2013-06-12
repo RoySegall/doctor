@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Simple test for the doctor module.
+ */
+class doctorTest extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Doctor',
+      'description' => 'Verify that the doctor item will return the correct text.',
+      'group' => 'Doctor',
+    );
+  }
+
+  public function setup() {
+    parent::setUp(array('doctor_example'));
+  }
+
+  /**
+   * Test the user settings class.
+   */
+  public function testDoctor() {
+    // Create a node.
+
+    // Create comment.
+
+    // Get a doctor items.
+  }
+}

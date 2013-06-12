@@ -16,6 +16,7 @@ function doctor_menu() {
     'page callback' => array('drupal_get_form'),
     'page arguments' => array('doctor_settings'),
     'access arguments' => array('doctor manage settings'),
+    'description' => 'Manage settings for the doctor module.',
   );
 
   $items['admin/structure/doctor'] = array(
