@@ -357,7 +357,7 @@ function doctor_entity_metadata_wrapper_data_validation_callback() {
  * @param $time
  *  The time the item created.
  *
- * @return bool
+ * @return doctorEntity
  *  The entity object of the listener item.
  */
 function doctor_create($data, $time = NULL) {
