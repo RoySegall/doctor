@@ -7,6 +7,9 @@
 // The cache name for the doctor listeners handlers.
 define('DOCTOR_LISTENER_CACHE', 'doctor_listener_info');
 
+// The cache name for the doctor listen item in the UI.
+define('DOCTOR_LISTENER_CACHE_UI', 'doctor_listener_info_ui');
+
 /**
  * Implements hook_menu_item().
  */
@@ -435,6 +438,26 @@ function doctor_listener_handler() {
   }
 
   return $doctor_listener_handler;
+}
+
+/**
+ * Display handler for the UI.
+ */
+function doctor_listener_handler_ui() {
+  if ($cache = cache_get(DOCTOR_LISTENER_CACHE_UI)) {
+    $doctor_listener_handler_ui = $cache->data;
+  }
+  else {
+    // Collect all the doctor listeners handlers.
+    $doctor_listener_handler_ui = module_invoke_all('doctor_listener_ui_info');
+
+    // Let other modules to alter the module.
+    drupal_alter('doctor_listener_ui_info', $info);
+
+    cache_set(DOCTOR_LISTENER_CACHE, $doctor_listener_handler_ui, 'cache');
+  }
+
+  return $doctor_listener_handler_ui;
 }
 
 /**
