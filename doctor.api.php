@@ -55,6 +55,9 @@ function hook_doctor_listener_ui_info() {
 /**
  * Doctor listener callback function of the UI.
  *
+ * The first module that will return an output will win the privilege to present
+ * his styled doctor item.
+ *
  * @param $data
  *  The un-serialized data listener item.
  *

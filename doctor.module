@@ -454,7 +454,7 @@ function doctor_listener_handler_ui() {
     // Let other modules to alter the module.
     drupal_alter('doctor_listener_ui_info', $info);
 
-    cache_set(DOCTOR_LISTENER_CACHE, $doctor_listener_handler_ui, 'cache');
+    cache_set(DOCTOR_LISTENER_CACHE_UI, $doctor_listener_handler_ui, 'cache');
   }
 
   return $doctor_listener_handler_ui;
@@ -811,8 +811,18 @@ function doctor_view_items() {
     $doctors = doctor_load_multiple(array_keys($result['doctor']));
     foreach ($doctors as $doctor) {
 
+      // The first module that will return an output will win the privilege to
+      // present his styled doctor item.
+      if ($listeners = doctor_listener_handler_ui()) {
+        foreach ($listeners as $listener) {
+          if ($output = call_user_func($listener['callback'], $doctor->data)) {
+            break;
+          }
+        }
+      }
+
       $content[] = array(
-        print_r($doctor->data, TRUE),
+        !empty($output) ? $output : print_r($doctor->data, TRUE),
         date('Y-m-d H:i', $doctor->created),
         l(t('Delete'), 'doctor/' . $doctor->id . '/delete'),
       );
