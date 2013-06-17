@@ -39,12 +39,12 @@ function hook_doctor_listener_info_alter(&$data) {
 }
 
 /**
- * Implements hook_listener_ui_info().
+ * Implements hook_doctor_listener_ui_info().
  *
  * Unlike the normal listen item, this hook will define which hook will be
  * implements when watching the reports in the admin page.
  */
-function hook_listener_ui_info() {
+function hook_doctor_listener_ui_info() {
   return array(
     'doctor' => array(
       'callback' => '_hook_doctor_listener_ui_info',
