@@ -13,3 +13,30 @@ function doctor_restful_ctools_plugin_directory($module, $plugin) {
     return 'plugins/' . $plugin;
   }
 }
+
+/**
+ * Init the pusher loader.
+ *
+ * @return \Pusher
+ */
+function doctor_restful_init_pusher() {
+  require_once libraries_get_path('pusher') . '/lib/Pusher.php';
+
+  $pusher = variable_get('pusher');
+  $app_id = $pusher['id'];
+  $app_key = $pusher['key'];
+  $app_secret = $pusher['secret'];
+
+  return new Pusher($app_key, $app_secret, $app_id);
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function doctor_restful_entity_insert($entity, $type) {
+  if ($type != 'doctor') {
+    return;
+  }
+
+  doctor_restful_init_pusher()->trigger('doctor', 'diagnose', $entity);
+}
