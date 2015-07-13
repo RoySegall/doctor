@@ -71,11 +71,19 @@ function _doctor_example_doctor_listener_ui_info($data) {
  * Implements hook_node_insert().
  */
 function doctor_example_node_insert($node) {
-  doctor_create(
-    array(
-      'wrapper' => entity_metadata_wrapper('node', $node),
-    )
-  )->save();
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  if (module_exists('doctor_restful')) {
+    $data = array(
+      'title' => $wrapper->label(),
+      'author' => $wrapper->author->label(),
+    );
+  }
+  else {
+    $data = array('wrapper' => $wrapper);
+  }
+
+  doctor_create($data)->save();
 }
 
 /**

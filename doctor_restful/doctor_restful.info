@@ -1,0 +1,8 @@
+name = Doctor restful
+description = Provide restful integration with Pusher and Angular JS debug toolbar
+core = 7.x
+package = Doctor
+
+dependencies[] = doctor
+dependencies[] = libraries
+dependencies[] = restful
