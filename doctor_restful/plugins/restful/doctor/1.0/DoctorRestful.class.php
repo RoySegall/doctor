@@ -29,4 +29,11 @@ class DoctorRestful extends RestfulEntityBase {
     return $info;
   }
 
+  /**
+   * Overrides parent::queryForListSort().
+   */
+  protected function queryForListSort(\EntityFieldQuery $query) {
+    $query->propertyOrderBy('created', 'DESC');
+  }
+
 }
